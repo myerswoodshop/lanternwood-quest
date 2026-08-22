@@ -54,3 +54,5 @@ jobs:
           fi
           git commit -m 'Apply mobile control and HUD polish'
           git push
+
+# trigger ui polish pass 2
