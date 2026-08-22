@@ -1,0 +1,2 @@
+Lanternwood Quest deployed successfully
+https://myerswoodshop.github.io/lanternwood-quest/
