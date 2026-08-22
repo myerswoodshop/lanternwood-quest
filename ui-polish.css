@@ -1,0 +1,112 @@
+/* Lanternwood mobile HUD/control polish */
+.touch-pulse,
+.touch-fireball {
+  opacity: .68;
+  transition: opacity .14s ease, transform .14s ease;
+}
+.touch-pulse:active,
+.touch-fireball:active {
+  opacity: .9;
+}
+.joystick-base {
+  opacity: .62;
+}
+.joystick-knob {
+  opacity: .78;
+}
+.joystick-label {
+  opacity: .72;
+}
+
+@media (width <= 720px), (pointer: coarse) {
+  .status {
+    gap: 3px;
+    font-size: .68rem;
+  }
+  .status span,
+  .status b {
+    padding: 4px 6px;
+    background: #0d271f99;
+    border-color: #6f9b8870;
+    box-shadow: 0 3px 10px #0005;
+  }
+  .energy {
+    width: 58px;
+    padding: 4px 5px;
+    background: #0d271f99;
+    border-color: #6f9b8870;
+    box-shadow: 0 3px 10px #0005;
+  }
+  .energy u {
+    height: 5px;
+  }
+  .system-button,
+  .expand-button {
+    opacity: .72;
+    min-width: 30px;
+    min-height: 30px;
+    padding: 4px 6px;
+  }
+  .mission {
+    opacity: .78;
+    padding: 5px 9px;
+    font-size: .68rem;
+    max-width: 48vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (pointer: coarse) and (width >= 900px) {
+  .play-area.expanded .game-header {
+    top: max(8px, calc(env(safe-area-inset-top) + 4px));
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+  }
+  .play-area.expanded .header-right {
+    gap: 5px;
+  }
+  .play-area.expanded .status {
+    gap: 4px;
+    margin-right: auto;
+    font-size: .72rem;
+  }
+  .play-area.expanded .status span,
+  .play-area.expanded .status b {
+    min-height: 30px;
+    padding: 5px 7px;
+    font-size: .72rem;
+    background: #0d271f8f;
+  }
+  .play-area.expanded .energy {
+    width: 64px;
+    padding: 5px 6px;
+    background: #0d271f8f;
+  }
+  .play-area.expanded .energy em {
+    display: none;
+  }
+  .play-area.expanded .energy u {
+    height: 6px;
+  }
+  .play-area.expanded .system-button,
+  .play-area.expanded .expand-button {
+    min-width: 34px;
+    min-height: 32px;
+    padding: 4px 7px;
+    font-size: .85rem;
+    opacity: .68;
+  }
+  .play-area.expanded .system-button span,
+  .play-area.expanded .expand-button span {
+    display: none;
+  }
+  .play-area.expanded .mission {
+    top: max(8px, calc(env(safe-area-inset-top) + 4px));
+    width: min(360px, 36vw);
+    max-width: 36vw;
+    padding: 6px 12px;
+    font-size: .72rem;
+    opacity: .74;
+  }
+}
