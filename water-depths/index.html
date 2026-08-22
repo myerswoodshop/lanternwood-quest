@@ -10,7 +10,7 @@
 </style>
 </head>
 <body>
-<div class="frame-wrap"><iframe id="waterGame" src="./game.html?v=shell-1" title="Water Depths game" allow="fullscreen"></iframe></div>
+<div class="frame-wrap"><iframe id="waterGame" src="./game.html?v=shell-2" title="Water Depths game" allow="fullscreen"></iframe></div>
 <div class="ready" id="ready">
   <div class="ready-card">
     <div class="wave">🌊</div>
@@ -37,6 +37,7 @@ function tuneFrame(){
   if(!d||!d.head)return;
   var old=d.getElementById('lanternwood-water-shell-fix');if(old)old.remove();
   var s=d.createElement('style');s.id='lanternwood-water-shell-fix';s.textContent='html,body{margin:0!important;width:100%!important;height:100%!important;overflow:hidden!important}body{min-height:0!important}.wrap{width:100%!important;height:100dvh!important;max-width:none!important;margin:0!important;padding:4px 8px!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}.top{flex:0 0 auto!important;margin:0 0 3px!important;gap:5px!important}.top h1{font-size:clamp(1rem,3vw,1.35rem)!important;margin:0!important;white-space:nowrap}.stats{gap:3px!important;flex-wrap:nowrap!important}.pill{padding:4px 6px!important;font-size:.62rem!important;white-space:nowrap}.game{flex:0 0 auto!important;width:min(100%,calc((100dvh - 54px)*1.77778))!important;margin:0 auto!important}.game canvas{width:100%!important;height:auto!important;aspect-ratio:16/9!important}.overlay[hidden]{display:none!important}.overlay{padding:6px!important}.panel{max-height:calc(100% - 10px)!important;overflow:hidden!important;padding:11px 14px!important}.mobile{display:block!important}@media (orientation:landscape) and (max-height:520px){.wrap{padding:2px 7px!important}.top h1{font-size:.95rem!important}.pill{font-size:.54rem!important;padding:3px 5px!important}.game{width:min(100%,calc((100dvh - 40px)*1.77778))!important}.mission{font-size:.55rem!important;padding:4px 7px!important}.joy{width:92px!important;height:92px!important;left:10px!important;bottom:10px!important}.buttons button{width:64px!important;height:64px!important;font-size:.72rem!important}.panel{padding:8px 10px!important}}';d.head.appendChild(s);
+  if(!d.getElementById('lanternwood-water-visual-polish')){var js=d.createElement('script');js.id='lanternwood-water-visual-polish';js.src='./visual-polish.js?v=2';d.head.appendChild(js)}
   var ov=d.getElementById('overlay');
   if(ov)ov.hidden=true;
   var panel=ov&&ov.querySelector('.panel');
