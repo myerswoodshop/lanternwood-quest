@@ -1,0 +1,56 @@
+name: Apply Lanternwood UI polish
+
+on:
+  push:
+    paths:
+      - 'ui-polish.css'
+      - '.github/workflows/apply-ui-polish.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Link UI polish stylesheet
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '<link rel="stylesheet" href="./ui-polish.css?v=1">'
+          if marker not in s:
+              if '</head>' not in s:
+                  raise SystemExit('index.html is missing </head>')
+              s = s.replace('</head>', marker + '</head>', 1)
+              p.write_text(s, encoding='utf-8')
+          PY
+          grep -q 'ui-polish.css?v=1' index.html
+          grep -q '__ReactDOMClient.hydrateRoot' index.html
+          if grep -q '__ReactDOMClient.createRoot' index.html; then
+            echo 'ERROR: createRoot regression detected'
+            exit 1
+          fi
+
+      - name: Commit UI polish link
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'UI polish link already applied.'
+            exit 0
+          fi
+          git commit -m 'Apply mobile control and HUD polish'
+          git push
