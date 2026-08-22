@@ -18,8 +18,7 @@ const __React=__framework.i();
 const __ReactDOMClient=__framework.t();
 const __rootEl=document.getElementById('root');
 if(!__rootEl) throw new Error('Lanternwood root missing');
-const __root=__ReactDOMClient.createRoot(__rootEl);
-__root.render(__React.createElement(__Game));
+const __root=__ReactDOMClient.hydrateRoot(__rootEl,__React.createElement(__Game));
 }catch(err){
  console.error('Lanternwood startup failed',err);
  var e=document.getElementById('boot-error'); if(e){e.style.display='block';e.textContent='Lanternwood could not start: '+(err&&err.message?err.message:err);}
