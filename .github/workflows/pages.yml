@@ -44,3 +44,5 @@ jobs:
           git add DEPLOYMENT_OK.txt
           git commit -m 'Record successful Pages deployment [skip ci]' || exit 0
           git push
+
+# manual trigger after Pages source enabled
