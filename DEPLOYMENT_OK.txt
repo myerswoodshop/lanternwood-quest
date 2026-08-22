@@ -1,2 +1,4 @@
 Lanternwood Quest deployed successfully
-https://myerswoodshop.github.io/lanternwood-quest/
+URL: https://myerswoodshop.github.io/lanternwood-quest/
+COMMIT: 90bceb5fc513b062eb88695e7b11c85cfd297a93
+DEPLOYED: 2026-08-22T01:30:41Z
