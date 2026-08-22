@@ -3,10 +3,12 @@ name: Deploy Lanternwood Quest to GitHub Pages
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'DEPLOYMENT_OK.txt'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -34,3 +36,13 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Record successful deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf 'Lanternwood Quest deployed successfully\n%s\n' "${{ steps.deployment.outputs.page_url }}" > DEPLOYMENT_OK.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add DEPLOYMENT_OK.txt
+          git commit -m 'Record successful Pages deployment [skip ci]' || exit 0
+          git push
