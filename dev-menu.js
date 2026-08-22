@@ -17,7 +17,7 @@ function addBossButtons(){
     const b=document.createElement('button');
     b.className='dev-water-boss';
     b.innerHTML='<span>🌊</span><strong>LEVEL 4 BOSS</strong><small>Tidal Warden</small>';
-    b.addEventListener('click',()=>{location.href='./water-depths/?devboss=1'});
+    b.addEventListener('click',()=>{location.href='./water-depths/?devboss=1&v=direct-water-2'});
     box.appendChild(b);
   }
 }
