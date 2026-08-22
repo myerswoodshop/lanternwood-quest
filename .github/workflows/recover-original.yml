@@ -1,0 +1,38 @@
+name: Recover original Lanternwood Quest
+
+on:
+  push:
+    paths:
+      - '.github/workflows/recover-original.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download original deployed game
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://lanternwood-quest.myerswoodshop.chatgpt.site'
+          mkdir -p assets
+          curl -fsSL "$BASE/" -o index.html
+          curl -fsSL "$BASE/assets/index-BkbZTJ4J.css" -o assets/index-BkbZTJ4J.css
+          curl -fsSL "$BASE/assets/layout-segment-context-CcMquw1v.js" -o assets/layout-segment-context-CcMquw1v.js
+          curl -fsSL "$BASE/assets/rolldown-runtime-S-ySWqyJ.js" -o assets/rolldown-runtime-S-ySWqyJ.js
+          curl -fsSL "$BASE/assets/index-B8oJX8eq.js" -o assets/index-B8oJX8eq.js
+          curl -fsSL "$BASE/assets/framework-CXnKph_e.js" -o assets/framework-CXnKph_e.js
+          curl -fsSL "$BASE/assets/page-375KUDws.js" -o assets/page-375KUDws.js
+          curl -fsSL "$BASE/favicon.svg" -o favicon.svg || true
+          curl -fsSL "$BASE/og.png" -o og.png || true
+      - name: Commit recovered production files
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html assets favicon.svg og.png 2>/dev/null || git add index.html assets
+          git commit -m 'Recover original Lanternwood Quest production build' || exit 0
+          git push
