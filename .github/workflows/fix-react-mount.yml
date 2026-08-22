@@ -1,0 +1,43 @@
+name: Fix Lanternwood React mount
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-react-mount.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch standalone React mount
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = "const __root=__ReactDOMClient.createRoot(__rootEl);\n__root.render(__React.createElement(__Game));"
+          new = "const __root=__ReactDOMClient.hydrateRoot(__rootEl,__React.createElement(__Game));"
+          if old not in s:
+              raise SystemExit('Expected createRoot mount block not found; refusing blind patch')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          assert '__ReactDOMClient.createRoot(__rootEl)' not in s
+          assert '__ReactDOMClient.hydrateRoot(__rootEl,__React.createElement(__Game))' in s
+          print('React mount patched to hydrateRoot')
+          PY
+      - name: Commit fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Fix Lanternwood React 19 mount' || exit 0
+          git push
