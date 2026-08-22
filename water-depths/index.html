@@ -5,84 +5,62 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#061c2b">
 <title>Lanternwood Quest — Water Depths</title>
-<style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#061c2b;color:#fff4cf;font-family:system-ui,sans-serif}body{position:fixed;inset:0}.frame-wrap{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden;pointer-events:auto}iframe{border:0;width:100%;height:100%;display:block;background:#061c2b;pointer-events:auto}.ready{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));background:radial-gradient(circle at 50% 35%,#0d5368ee,#03131df5 72%)}.ready[hidden]{display:none!important;pointer-events:none!important}.ready-card{width:min(560px,84vw);max-height:88dvh;border:2px solid #78dbef;border-radius:22px;background:linear-gradient(150deg,#0b465bf4,#072638f4);box-shadow:0 20px 70px #000b,0 0 34px #65dff044;padding:14px 18px;text-align:center;display:grid;gap:9px}.wave{font-size:2rem;line-height:1}.chapter{font-size:.65rem;letter-spacing:.2em;font-weight:950;color:#9eefff}.ready h1{font-family:Georgia,serif;font-size:clamp(1.55rem,5vw,2.3rem);line-height:1;margin:0}.ready p{margin:0;color:#dffbff;font-size:.82rem;line-height:1.35}.quick{display:flex;justify-content:center;gap:7px;flex-wrap:wrap}.chip{border:1px solid #6bbfd0;border-radius:999px;padding:5px 9px;background:#06293a;font-size:.69rem;font-weight:900}.merchant{border:1px solid #6bbfd0;border-radius:13px;padding:7px 10px;background:#052536}.merchant b{font-size:.74rem;letter-spacing:.07em}.merchant small{display:block;margin-top:2px;color:#dffbff}.actions{display:grid;grid-template-columns:1.25fr 1fr;gap:9px}.actions button{border:0;border-radius:999px;min-height:42px;padding:9px 13px;font-weight:950;letter-spacing:.04em;background:#68dbef;color:#06202a;box-shadow:0 5px #17495b}.actions .back{background:#173f52;color:#eaffff;border:1px solid #6bbfd0;box-shadow:none}@media (orientation:landscape) and (max-height:520px){.ready-card{width:min(600px,72vw);max-height:82dvh;padding:9px 13px;gap:5px;border-radius:17px}.wave{font-size:1.35rem}.chapter{font-size:.52rem}.ready h1{font-size:1.35rem}.ready p{font-size:.66rem}.chip{font-size:.56rem;padding:3px 7px}.merchant{padding:5px 8px}.merchant b{font-size:.61rem}.merchant small{font-size:.57rem}.actions{gap:7px}.actions button{min-height:31px;padding:5px 10px;font-size:.65rem}}
-</style>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#061c2b;color:#fff4cf;font-family:system-ui,sans-serif}#boot{position:fixed;inset:0;display:grid;place-items:center;font-weight:900}</style>
 </head>
 <body>
-<div class="frame-wrap"><iframe id="waterGame" title="Water Depths game" allow="fullscreen"></iframe></div>
-<div class="ready" id="ready">
-  <div class="ready-card">
-    <div class="wave">🌊</div>
-    <div class="chapter">LEVEL 4</div>
-    <h1>Water Depths</h1>
-    <p>Water Shades have flooded the ruins. Break through them and face the Tidal Warden.</p>
-    <div class="quick">
-      <span class="chip">Water Shades · 4 HP</span>
-      <span class="chip">✦ Light · 1 dmg / 28 stamina</span>
-      <span class="chip">➶ Harpoon · 2 dmg / 35 stamina</span>
-      <span class="chip">Boss attacks · 3 hearts</span>
-    </div>
-    <div class="merchant"><b>THIRD NIGHT MERCHANT</b><small>♥ +1 maximum heart · ◆ 10</small></div>
-    <div class="actions"><button id="play">ENTER THE WATER</button><button class="back" id="back">← LEVEL MENU</button></div>
-  </div>
-</div>
+<div id="boot">Loading Water Depths…</div>
 <script>
 (function(){
 'use strict';
-var frame=document.getElementById('waterGame'),ready=document.getElementById('ready'),devBoss=new URLSearchParams(location.search).get('devboss')==='1';
-function transformGame(html){
-  html=html.replace(/🔥 56 stamina/g,'➶ 35 stamina');
-  html=html.replace(/Fireball does <b>2 damage<\/b> for <b>56 stamina<\/b>/g,'Harpoon does <b>2 damage</b> for <b>35 stamina</b>');
-  html=html.replace(/if\(!running\|\|stamina<56\)return;stamina-=56;/g,'if(!running||stamina<35)return;stamina-=35;');
-  html=html.replace(/Fireball: 2 damage · 56 stamina/g,'Harpoon: 2 damage · 35 stamina');
-  html=html.replace(/🔥<br>FIREBALL/g,'➶<br>HARPOON');
-  html=html.replace(/for\(const s of shots\)\{x\.fillStyle='#ff7627';x\.beginPath\(\);x\.arc\(s\.x,s\.y,11,0,Math\.PI\*2\);x\.fill\(\)\}/g,"for(const s of shots){x.save();x.translate(s.x,s.y);x.rotate(Math.atan2(s.vy,s.vx));x.shadowColor='#b9f7ff';x.shadowBlur=12;x.strokeStyle='#d8fbff';x.lineWidth=4;x.lineCap='round';x.beginPath();x.moveTo(-17,0);x.lineTo(15,0);x.stroke();x.fillStyle='#9cecff';x.beginPath();x.moveTo(18,0);x.lineTo(7,-7);x.lineTo(7,7);x.closePath();x.fill();x.strokeStyle='#69bfd4';x.lineWidth=2;x.beginPath();x.moveTo(-13,-5);x.lineTo(-18,0);x.lineTo(-13,5);x.stroke();x.restore()}");
-  if(devBoss){
-    html=html.replace('running=false,last=performance.now(),bossOn=false,won=false','running=false,last=performance.now(),bossOn=true,won=false');
-    html=html.replace(/let enemies=\[\[220,150\][\s\S]*?\.map\(v=>\(\{x:v\[0\],y:v\[1\],hp:4,stun:0\}\)\);/,'let enemies=[];');
-  }
-  return html;
+var devBoss=new URLSearchParams(location.search).get('devboss')==='1';
+fetch('./game.html?v=direct-water-2',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('Could not load Water Depths ('+r.status+')');return r.text()}).then(function(html){
+function swap(from,to,label){if(html.indexOf(from)===-1)throw new Error('Water patch target missing: '+label);html=html.replace(from,to)}
+
+swap('🔥 56 stamina','➶ 35 stamina','harpoon HUD');
+swap('Fireball does <b>2 damage</b> for <b>56 stamina</b>.','Harpoon does <b>2 damage</b> for <b>35 stamina</b>.','harpoon intro');
+swap('4 light hits or 2 Fireballs.','4 light hits or 2 Harpoons.','regular wall copy');
+swap('5 light hits or 3 Fireballs.','5 light hits or 3 Harpoons.','reinforced wall copy');
+swap('🔥<br>FIREBALL','➶<br>HARPOON','harpoon button');
+swap("function fire(){if(!running||stamina<56)return;stamina-=56;","function fire(){if(!running||stamina<35)return;stamina-=35;",'harpoon stamina');
+swap("mission.textContent='Fireball: 2 damage · 56 stamina'","mission.textContent='Harpoon: 2 damage · 35 stamina'",'harpoon mission');
+
+var oldShot="for(const s of shots){x.fillStyle='#ff7627';x.beginPath();x.arc(s.x,s.y,11,0,Math.PI*2);x.fill()}";
+var newShot="for(const s of shots){x.save();x.translate(s.x,s.y);x.rotate(Math.atan2(s.vy,s.vx));x.shadowColor='#b9f7ff';x.shadowBlur=14;x.strokeStyle='#e7fdff';x.lineWidth=4;x.lineCap='round';x.beginPath();x.moveTo(-19,0);x.lineTo(14,0);x.stroke();x.fillStyle='#8cecff';x.beginPath();x.moveTo(19,0);x.lineTo(7,-7);x.lineTo(7,7);x.closePath();x.fill();x.strokeStyle='#66b9ce';x.lineWidth=2;x.beginPath();x.moveTo(-14,-6);x.lineTo(-20,0);x.lineTo(-14,6);x.stroke();x.restore()}";
+swap(oldShot,newShot,'harpoon projectile');
+
+var oldEnemy="for(const e of enemies){x.fillStyle='#176c87';x.shadowColor='#5ee9ff';x.shadowBlur=15;x.beginPath();x.arc(e.x,e.y,23,0,Math.PI*2);x.fill();x.shadowBlur=0;for(let i=0;i<4;i++){x.fillStyle=i<e.hp?'#79efff':'#173747';x.beginPath();x.arc(e.x-15+i*10,e.y-34,4,0,Math.PI*2);x.fill()}}";
+var newEnemy="for(const e of enemies){x.save();x.translate(e.x,e.y);x.shadowColor='#49ddff';x.shadowBlur=18;x.fillStyle=e.stun>0?'#4bafbf':'#07506b';x.beginPath();x.moveTo(0,-28);x.quadraticCurveTo(25,-17,23,8);x.lineTo(14,21);x.lineTo(5,14);x.lineTo(-4,23);x.lineTo(-12,14);x.lineTo(-23,20);x.quadraticCurveTo(-26,-12,0,-28);x.fill();x.fillStyle='#0a3148';x.beginPath();x.moveTo(-21,-7);x.lineTo(-34,-17);x.lineTo(-27,2);x.moveTo(21,-7);x.lineTo(34,-17);x.lineTo(27,2);x.fill();x.shadowBlur=0;x.fillStyle='#dffcff';x.beginPath();x.moveTo(-15,-9);x.lineTo(-3,-6);x.lineTo(-14,-2);x.moveTo(15,-9);x.lineTo(3,-6);x.lineTo(14,-2);x.fill();x.fillStyle='#08202d';x.beginPath();x.arc(-9,-6,2.5,0,Math.PI*2);x.arc(9,-6,2.5,0,Math.PI*2);x.fill();x.strokeStyle='#a8eff7';x.lineWidth=2;x.beginPath();x.moveTo(-9,7);x.lineTo(0,12);x.lineTo(9,7);x.stroke();for(let i=0;i<4;i++){x.fillStyle=i<e.hp?'#79efff':'#173747';x.beginPath();x.arc(-15+i*10,-37,4,0,Math.PI*2);x.fill()}x.restore()}";
+swap(oldEnemy,newEnemy,'Water Shade art');
+
+var oldBoss="if(bossOn&&boss.hp>0){x.fillStyle='#053d55';x.shadowColor='#5de8ff';x.shadowBlur=28;x.beginPath();x.arc(boss.x,boss.y,48,0,Math.PI*2);x.fill();x.fillStyle='#8cf3ff';x.beginPath();x.moveTo(boss.x-34,boss.y-30);x.lineTo(boss.x-18,boss.y-65);x.lineTo(boss.x,boss.y-44);x.lineTo(boss.x+20,boss.y-68);x.lineTo(boss.x+36,boss.y-30);x.closePath();x.fill();x.shadowBlur=0}";
+var newBoss="if(bossOn&&boss.hp>0){x.save();x.translate(boss.x,boss.y);x.shadowColor='#66edff';x.shadowBlur=34;x.fillStyle=boss.stun>0?'#357f91':'#032f47';x.beginPath();x.moveTo(-48,32);x.quadraticCurveTo(-55,-12,-32,-35);x.lineTo(-43,-53);x.lineTo(-20,-46);x.lineTo(0,-72);x.lineTo(20,-46);x.lineTo(44,-55);x.lineTo(32,-34);x.quadraticCurveTo(55,-10,48,32);x.lineTo(27,19);x.lineTo(15,38);x.lineTo(0,22);x.lineTo(-15,39);x.lineTo(-28,18);x.closePath();x.fill();x.strokeStyle='#76eaff';x.lineWidth=4;x.stroke();x.shadowBlur=0;x.fillStyle='#d9fbff';x.beginPath();x.moveTo(-25,-19);x.lineTo(-5,-13);x.lineTo(-22,-7);x.moveTo(25,-19);x.lineTo(5,-13);x.lineTo(22,-7);x.fill();x.fillStyle='#06161f';x.beginPath();x.arc(-14,-13,4,0,Math.PI*2);x.arc(14,-13,4,0,Math.PI*2);x.fill();x.strokeStyle='#9befff';x.lineWidth=4;x.beginPath();x.moveTo(-20,8);x.quadraticCurveTo(0,23,20,8);x.stroke();x.restore()}";
+swap(oldBoss,newBoss,'Tidal Warden art');
+
+var oldPlayer="x.save();x.translate(p.x,p.y);if(p.inv>0&&Math.floor(p.inv*10)%2===0)x.globalAlpha=.45;x.fillStyle='#1e7a7e';x.fillRect(-13,-13,26,31);x.fillStyle='#efb78d';x.beginPath();x.arc(0,-21,11,0,Math.PI*2);x.fill();x.fillStyle='#ffe56f';x.fillRect(17,-2,15,20);x.restore()";
+var newPlayer="x.save();x.translate(p.x,p.y);if(p.inv>0&&Math.floor(p.inv*10)%2===0)x.globalAlpha=.55;if(p.inv>0){x.shadowColor='#9a4cff';x.shadowBlur=28;x.strokeStyle='#9c55d9';x.lineWidth=5;x.beginPath();x.arc(0,-4,31,0,Math.PI*2);x.stroke();x.shadowBlur=0}x.fillStyle='#07141b88';x.beginPath();x.ellipse(0,23,20,6,0,0,Math.PI*2);x.fill();x.strokeStyle='#4a3025';x.lineWidth=6;x.lineCap='round';x.beginPath();x.moveTo(-6,10);x.lineTo(-8,22);x.moveTo(6,10);x.lineTo(8,22);x.stroke();x.fillStyle=p.inv>0?'#36204d':'#176f78';x.beginPath();x.moveTo(-13,-10);x.lineTo(12,-10);x.lineTo(11,13);x.quadraticCurveTo(0,19,-11,13);x.closePath();x.fill();x.strokeStyle='#e6ad80';x.lineWidth=5;x.beginPath();x.moveTo(-10,-6);x.lineTo(-18,5);x.moveTo(10,-6);x.lineTo(20,0);x.stroke();x.fillStyle='#efb78d';x.beginPath();x.arc(0,-22,11,0,Math.PI*2);x.fill();x.fillStyle=p.inv>0?'#170e24':'#5c3226';x.beginPath();x.arc(0,-25,12,Math.PI,Math.PI*2);x.fill();x.fillStyle=p.inv>0?'#e8d4ff':'#fff7e7';x.beginPath();x.arc(-4,-21,2,0,Math.PI*2);x.arc(4,-21,2,0,Math.PI*2);x.fill();x.fillStyle='#16282a';x.beginPath();x.arc(-4,-21,1,0,Math.PI*2);x.arc(4,-21,1,0,Math.PI*2);x.fill();x.shadowColor='#ffe56f';x.shadowBlur=18;x.fillStyle='#ffe56f';x.fillRect(17,-4,13,18);x.strokeStyle='#b97827';x.lineWidth=2;x.strokeRect(17,-4,13,18);x.shadowBlur=0;x.restore()";
+swap(oldPlayer,newPlayer,'explorer art');
+
+var arenaAnchor="x.strokeStyle='#5bc7df';x.lineWidth=5;x.strokeRect(26,72,W-52,H-94);";
+var underwater="x.strokeStyle='#5bc7df';x.lineWidth=5;x.strokeRect(26,72,W-52,H-94);let uw=performance.now()/1000;x.save();x.globalCompositeOperation='screen';for(let i=0;i<7;i++){let yy=105+i*58+Math.sin(uw*1.25+i)*13;x.strokeStyle='rgba(126,232,255,'+(0.075+i%2*.035)+')';x.lineWidth=13+i%3*4;x.beginPath();x.moveTo(35,yy);for(let xx=35;xx<W-25;xx+=45)x.lineTo(xx,yy+Math.sin(xx*.022+uw*1.8+i)*11);x.stroke()}for(let i=0;i<24;i++){let bx=45+(i*137)%870,by=495-((uw*(22+i%5*7)+i*83)%410),br=2+i%4;x.strokeStyle='rgba(203,249,255,'+(0.22+i%3*.08)+')';x.lineWidth=1.5;x.beginPath();x.arc(bx+Math.sin(uw+i)*10,by,br,0,Math.PI*2);x.stroke()}let rays=x.createLinearGradient(0,75,0,500);rays.addColorStop(0,'rgba(150,242,255,.18)');rays.addColorStop(.45,'rgba(48,175,211,.06)');rays.addColorStop(1,'rgba(0,22,55,.12)');x.fillStyle=rays;x.fillRect(26,72,W-52,H-94);x.restore();";
+swap(arenaAnchor,underwater,'underwater canvas effects');
+
+swap("addEventListener('keydown',e=>{let k=e.key.toLowerCase();keys.add(k);if(k===' '&&!e.repeat)light();if(k==='f'&&!e.repeat)fire()});","addEventListener('keydown',e=>{let k=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','f'].includes(k))e.preventDefault();keys.add(k);if(k===' '&&!e.repeat)light();if(k==='f'&&!e.repeat)fire()});",'native WASD');
+
+var oldOverlay='<div class="overlay" id="overlay"><div class="panel"><div style="font-size:3rem">🌊</div><h2>The Water Depths</h2><p>Water enemies have <b>4 health</b>. Lantern light does <b>1 damage</b> for <b>28 stamina</b>. Harpoon does <b>2 damage</b> for <b>35 stamina</b>.</p><div class="shop"><b>Third Night Merchant</b><p>Permanent +1 maximum heart · 10 rupees</p><button id="buy">BUY HEART · ◆ 10</button></div><p>The Tidal Warden fires water balls, tidal waves, and water walls. Boss water attacks deal <b>3 hearts</b>.</p><p>Regular Water Walls: <b>4 HP</b> = 4 light hits or 2 Harpoons.<br>Reinforced Water Walls: <b>5 HP</b> = 5 light hits or 3 Harpoons.</p><button id="start">ENTER THE WATER</button><button id="back">← LEVEL MENU</button></div></div>';
+var newOverlay='<div class="overlay" id="overlay"><div class="panel"><div style="font-size:2rem">🌊</div><h2>The Water Depths</h2><p>Defeat the Water Shades, then face the Tidal Warden.</p><div class="shop"><b>Third Night Merchant</b><p>♥ +1 maximum heart · ◆ 10</p><button id="buy">BUY HEART · ◆ 10</button></div><div class="water-quick">4 HP Shades · ✦ 1 dmg / 28 · ➶ 2 dmg / 35 · Boss hits 3 hearts</div><button id="start">ENTER THE WATER</button><button id="back">← LEVEL MENU</button></div></div>';
+swap(oldOverlay,newOverlay,'compact intro');
+
+var css='<style id="water-direct-fix">html,body{width:100%;height:100%;overflow:hidden}.wrap{width:100%;height:100dvh;max-width:none;margin:0;padding:4px 8px;display:flex;flex-direction:column;overflow:hidden}.top{flex:0 0 auto;margin:0 0 3px;gap:5px}.top h1{font-size:clamp(1rem,3vw,1.35rem);margin:0;white-space:nowrap}.stats{gap:3px;flex-wrap:nowrap}.pill{padding:4px 6px;font-size:.62rem;white-space:nowrap}.game{flex:0 0 auto;width:min(100%,calc((100dvh - 54px)*1.77778));margin:0 auto}.game canvas{width:100%;height:auto;aspect-ratio:16/9}.overlay[hidden]{display:none!important}.overlay{padding:6px}.panel{max-width:520px;max-height:calc(100% - 10px);overflow:hidden;padding:10px 14px}.panel h2{font-size:1.55rem;margin:2px}.panel p{font-size:.72rem;margin:5px}.shop{margin:6px 0;padding:7px}.water-quick{font-size:.66rem;font-weight:900;margin:5px 0;color:#bfefff}.mobile{display:block;pointer-events:none}.joy,.buttons,.buttons button{pointer-events:auto}.joy{touch-action:none}.buttons button{touch-action:manipulation}@media(orientation:landscape) and (max-height:520px){.wrap{padding:2px 7px}.top h1{font-size:.95rem}.pill{font-size:.54rem;padding:3px 5px}.game{width:min(100%,calc((100dvh - 40px)*1.77778))}.mission{font-size:.55rem;padding:4px 7px}.joy{width:92px;height:92px;left:10px;bottom:10px}.buttons button{width:64px;height:64px;font-size:.72rem}.panel{max-width:480px;padding:7px 10px}.panel h2{font-size:1.15rem}.panel p,.water-quick{font-size:.58rem}.shop{padding:4px;margin:4px 0}.panel button{padding:6px 10px}}</style>';
+html=html.replace('</head>',css+'</head>');
+
+if(devBoss){
+  swap('running=false,last=performance.now(),bossOn=false,won=false','running=false,last=performance.now(),bossOn=true,won=false','DEV boss active');
+  html=html.replace(/let enemies=\[\[220,150\][\s\S]*?\.map\(v=>\(\{x:v\[0\],y:v\[1\],hp:4,stun:0\}\)\);/,'let enemies=[];');
+  html=html.replace('</body>',"<script>setTimeout(function(){var b=document.getElementById('bossbar');if(b)b.hidden=false;var s=document.getElementById('start');if(s)s.click()},0)<\/script></body>");
 }
-function addUnderwaterLayer(d){
-  if(!d||!d.head)return;
-  var old=d.getElementById('lanternwood-underwater-style');if(old)old.remove();
-  var s=d.createElement('style');s.id='lanternwood-underwater-style';s.textContent='@keyframes uwCaustic{0%{transform:translate(-4%,-3%) rotate(-1deg) scale(1.08)}50%{transform:translate(4%,2%) rotate(1deg) scale(1.14)}100%{transform:translate(-4%,-3%) rotate(-1deg) scale(1.08)}}@keyframes uwBubble{0%{transform:translateY(30px) translateX(0);opacity:0}15%{opacity:.8}60%{transform:translateY(-250px) translateX(12px);opacity:.6}100%{transform:translateY(-520px) translateX(-8px);opacity:0}}.game{isolation:isolate!important}.underwater-layer{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden;background:linear-gradient(180deg,rgba(44,185,220,.16),rgba(5,78,112,.08) 48%,rgba(0,18,44,.34));box-shadow:inset 0 0 120px rgba(0,13,36,.58)}.underwater-layer:before{content:"";position:absolute;inset:-24%;background:repeating-radial-gradient(ellipse at 50% -10%,rgba(188,249,255,.32) 0 2px,rgba(104,220,240,.13) 5px 11px,transparent 18px 38px);filter:blur(2px);mix-blend-mode:screen;animation:uwCaustic 7s ease-in-out infinite}.underwater-layer:after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 0 20%,rgba(159,243,255,.08) 28%,transparent 36% 58%,rgba(159,243,255,.06) 66%,transparent 74%);animation:uwCaustic 10s ease-in-out infinite reverse}.uw-bubble{position:absolute;bottom:-20px;border:2px solid rgba(213,252,255,.68);border-radius:50%;background:rgba(191,247,255,.08);box-shadow:inset -2px -2px 5px rgba(37,157,194,.25);animation:uwBubble var(--d) linear infinite;animation-delay:var(--delay);left:var(--x);width:var(--s);height:var(--s)}.mission,.boss,.mobile{z-index:4!important}';d.head.appendChild(s);
-  var game=d.querySelector('.game');if(!game)return;
-  var oldLayer=game.querySelector('.underwater-layer');if(oldLayer)oldLayer.remove();
-  var layer=d.createElement('div');layer.className='underwater-layer';layer.setAttribute('aria-hidden','true');
-  var specs=[['7%','9s','-2s','10px'],['16%','12s','-8s','7px'],['26%','10s','-5s','13px'],['38%','14s','-11s','8px'],['50%','11s','-4s','6px'],['61%','13s','-9s','12px'],['73%','10s','-6s','8px'],['84%','15s','-12s','14px'],['93%','9.5s','-3s','7px']];
-  specs.forEach(function(v){var b=d.createElement('i');b.className='uw-bubble';b.style.cssText='--x:'+v[0]+';--d:'+v[1]+';--delay:'+v[2]+';--s:'+v[3];layer.appendChild(b)});game.appendChild(layer);
-}
-function startInside(){
-  var d;try{d=frame.contentDocument||frame.contentWindow.document}catch(e){return}
-  var btn=d&&d.getElementById('start'),ov=d&&d.getElementById('overlay');
-  if(btn)btn.click();
-  if(ov)ov.hidden=true;
-  if(devBoss){var bar=d&&d.getElementById('bossbar'),mission=d&&d.getElementById('mission');if(bar)bar.hidden=false;if(mission)mission.textContent='DEV BOSS TEST — TIDAL WARDEN';}
-  ready.hidden=true;
-  try{frame.contentWindow.focus()}catch(e){}
-}
-function tuneFrame(){
-  var d;try{d=frame.contentDocument||frame.contentWindow.document}catch(e){return}
-  if(!d||!d.head)return;
-  var old=d.getElementById('lanternwood-water-shell-fix');if(old)old.remove();
-  var s=d.createElement('style');s.id='lanternwood-water-shell-fix';s.textContent='html,body{margin:0!important;width:100%!important;height:100%!important;overflow:hidden!important}body{min-height:0!important}.wrap{width:100%!important;height:100dvh!important;max-width:none!important;margin:0!important;padding:4px 8px!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}.top{flex:0 0 auto!important;margin:0 0 3px!important;gap:5px!important}.top h1{font-size:clamp(1rem,3vw,1.35rem)!important;margin:0!important;white-space:nowrap}.stats{gap:3px!important;flex-wrap:nowrap!important}.pill{padding:4px 6px!important;font-size:.62rem!important;white-space:nowrap}.game{flex:0 0 auto!important;width:min(100%,calc((100dvh - 54px)*1.77778))!important;margin:0 auto!important}.game canvas{width:100%!important;height:auto!important;aspect-ratio:16/9!important}.overlay[hidden]{display:none!important;pointer-events:none!important}.overlay{padding:6px!important}.panel{max-height:calc(100% - 10px)!important;overflow:hidden!important;padding:11px 14px!important}.mobile{display:block!important;pointer-events:none!important}.joy,.buttons,.buttons button{pointer-events:auto!important}.joy{touch-action:none!important}.buttons button{touch-action:manipulation!important}@media (orientation:landscape) and (max-height:520px){.wrap{padding:2px 7px!important}.top h1{font-size:.95rem!important}.pill{font-size:.54rem!important;padding:3px 5px!important}.game{width:min(100%,calc((100dvh - 40px)*1.77778))!important}.mission{font-size:.55rem!important;padding:4px 7px!important}.joy{width:92px!important;height:92px!important;left:10px!important;bottom:10px!important}.buttons button{width:64px!important;height:64px!important;font-size:.72rem!important}.panel{padding:8px 10px!important}}';d.head.appendChild(s);
-  var ov=d.getElementById('overlay');if(ov)ov.hidden=true;
-  addUnderwaterLayer(d);
-}
-function forwardKey(e,type){
-  if(!ready.hidden)return;
-  var k=e.key.toLowerCase();if(!['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','f'].includes(k))return;
-  e.preventDefault();
-  try{frame.contentWindow.dispatchEvent(new KeyboardEvent(type,{key:e.key,code:e.code,bubbles:true,cancelable:true,repeat:e.repeat}))}catch(err){}
-}
-window.addEventListener('keydown',function(e){forwardKey(e,'keydown')},{passive:false});
-window.addEventListener('keyup',function(e){forwardKey(e,'keyup')},{passive:false});
-frame.addEventListener('load',function(){tuneFrame();if(devBoss)setTimeout(startInside,0)});
-fetch('./game.html?v=underwater-harpoon-1',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('Water game load failed');return r.text()}).then(function(html){frame.srcdoc=transformGame(html)}).catch(function(){frame.src='./game.html?v=movement-fix-1'});
-document.getElementById('play').addEventListener('click',function(){tuneFrame();startInside()});
-document.getElementById('back').addEventListener('click',function(){location.href='../'});
+
+document.open();document.write(html);document.close();
+}).catch(function(err){console.error(err);document.getElementById('boot').textContent='Water Depths could not start: '+(err&&err.message?err.message:err)});
 })();
 </script>
 </body>
