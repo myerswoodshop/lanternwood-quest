@@ -1,18 +1,42 @@
 /* Lanternwood mobile HUD/control polish */
 .touch-pulse,
 .touch-fireball {
-  opacity: .68;
-  transition: opacity .14s ease, transform .14s ease;
+  opacity: 1;
+  transition: filter .14s ease, transform .14s ease;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+
+/* Keep the icon/text readable while making the actual button fill translucent. */
+.touch-pulse {
+  background: radial-gradient(circle at 40% 30%, #fff7bd99, #ffd85e88 55%, #d8952073);
+  border-color: #fff0a180;
+  box-shadow: 0 6px #80531580, 0 0 22px #ffe36e55, inset 0 2px 7px #ffffff55;
+}
+.touch-fireball {
+  background: radial-gradient(circle at 38% 28%, #fff09a99, #ff6d2c88 48%, #a6191873);
+  border-color: #ffb26780;
+  box-shadow: 0 6px #64151780, 0 0 22px #ff4b2855, inset 0 2px 7px #ffffff55;
 }
 .touch-pulse:active,
 .touch-fireball:active {
-  opacity: .9;
+  filter: brightness(1.18);
 }
+
 .joystick-base {
-  opacity: .62;
+  opacity: 1;
+  background: #102d256b;
+  border-color: #d1eadf66;
+  box-shadow: inset 0 0 22px #00000066, 0 6px 22px #00000055;
+}
+.joystick-ring {
+  border-color: #d9eee54d;
 }
 .joystick-knob {
-  opacity: .78;
+  opacity: 1;
+  background: linear-gradient(145deg, #397a6880, #1c4b3e80);
+  border-color: #b9efdd88;
+  box-shadow: 0 5px 12px #00000066, inset 0 2px 5px #ffffff22;
 }
 .joystick-label {
   opacity: .72;
