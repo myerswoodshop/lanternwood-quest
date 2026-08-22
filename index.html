@@ -5,36 +5,39 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <meta name="theme-color" content="#091a16">
   <title>The Lanternwood Quest</title>
-  <style>
-    html,body{margin:0;min-height:100%;background:#091a16;color:#fff4cf;font-family:system-ui,sans-serif}
-    #boot{position:fixed;inset:0;display:grid;place-items:center;font-weight:800}
-  </style>
+  <style>html,body{margin:0;min-height:100%;background:#091a16;color:#fff4cf;font-family:system-ui,sans-serif}#boot{position:fixed;inset:0;display:grid;place-items:center;font-weight:800}</style>
 </head>
 <body>
-  <div id="boot">Loading Lanternwood…</div>
-  <script>
-  (function(){
-    'use strict';
-    fetch('./game.html?v=brightness-100', {cache:'no-cache'})
-      .then(function(r){ if(!r.ok) throw new Error('Could not load game ('+r.status+')'); return r.text(); })
-      .then(function(html){
-        var saved='Math.max(60,Math.min(140,e.brightness))';
-        var savedFixed='Math.max(60,Math.min(100,e.brightness))';
-        var slider='min:`60`,max:`140`,step:`5`,value:B';
-        var sliderFixed='min:`60`,max:`100`,step:`5`,value:B';
-        if(html.indexOf(saved)===-1 || html.indexOf(slider)===-1 || html.indexOf('__ReactDOMClient.hydrateRoot')===-1){
-          throw new Error('Lanternwood source verification failed');
-        }
-        html=html.replace(saved,savedFixed).replace(slider,sliderFixed);
-        document.open();
-        document.write(html);
-        document.close();
-      })
-      .catch(function(err){
-        console.error('Lanternwood loader failed',err);
-        document.getElementById('boot').textContent='Lanternwood could not start: '+(err&&err.message?err.message:err);
-      });
-  })();
-  </script>
+<div id="boot">Loading Lanternwood…</div>
+<script>
+(function(){
+'use strict';
+fetch('./game.html?v=water-depths-3',{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error('Could not load game ('+r.status+')');return r.text()}).then(function(html){
+var pairs=[
+ ['Math.max(60,Math.min(140,e.brightness))','Math.max(60,Math.min(100,e.brightness))'],
+ ['min:`60`,max:`140`,step:`5`,value:B','min:`60`,max:`100`,step:`5`,value:B'],
+ ['re=e=>e===`baby`?5:e===`shadow`?2:3','re=e=>(e===`baby`?5:e===`shadow`?2:3)+Math.max(0,Number(localStorage.getItem(`lanternwood-heart-bonus`)||0))'],
+ ['if(_&&B&&z<=0){','if(_&&B&&z<=0&&we>=2*x){we-=2*x;'],
+ ['let e=i===3?s:c,n=v[t];','let e=c,n=v[t];'],
+ ['y.current===`lost`?Ie(x.current):Ie(S.current,!0)','y.current===`lost`?Ie(x.current):y.current===`won`?(location.href=`./water-depths/`):Ie(S.current,!0)'],
+ ['w===`won`?`You Won!`','w===`won`?`Water Depths Await!`'],
+ ['w===`won`?`You defeated the Ember Warden and restored all three realms. Do you want to play again?`','w===`won`?`The Ember Warden is defeated, but the Water Depths have opened beyond the dawn portal. The Tidal Warden is waiting.`'],
+ ['w===`won`||w===`lost`?`Play Again`','w===`won`?`Enter Water Depths`:w===`lost`?`Play Again`'],
+ ['Fireball deals 2 damage to Wardens, but 1 to Ember enemies.','Fireball deals 2× lantern damage and costs 2× lantern stamina.'],
+ ['Fireball! 1 damage to Ember enemies, 2 to the Warden.','Fireball! 2× lantern damage and 2× stamina cost.'],
+ ['Fireball unlocked! It deals 1 damage to Ember enemies and 2 to Wardens.','Fireball unlocked! It deals 2× lantern damage and costs 2× lantern stamina.'],
+ ['Cast Fireball. One damage to Ember enemies and two damage to Wardens.','Cast Fireball. Deals 2× lantern damage and costs 2× lantern stamina.']
+];
+for(var i=0;i<pairs.length;i++){if(html.indexOf(pairs[i][0])===-1)throw new Error('Lanternwood patch target missing #'+i);html=html.replace(pairs[i][0],pairs[i][1]);}
+var anchor='},[z,B,H,W]),(0,r.useEffect)(()=>(document.body.style.overflow=G?`hidden`:``,()=>{document.body.style.overflow=``}),[G])';
+var replacement='},[z,B,H,W]),(0,r.useEffect)(()=>{localStorage.setItem(`lanternwood-rupees`,String(A))},[A]),(0,r.useEffect)(()=>{let e=e=>{let t=e.detail||{},n=Number(t.cost),i=String(t.id);if(!n||!i||A<n)return;let a={};try{a=JSON.parse(localStorage.getItem(`lanternwood-heart-bought`)||`{}`)||{}}catch{}if(a[i])return;a[i]=!0;localStorage.setItem(`lanternwood-heart-bought`,JSON.stringify(a));localStorage.setItem(`lanternwood-heart-bonus`,String(Math.max(0,Number(localStorage.getItem(`lanternwood-heart-bonus`)||0))+1));xe(A-n),O(e=>e+1),ge(e=>e+1),Q(`collect`),X(`Heart upgrade purchased! Maximum health increased.`)};return window.addEventListener(`lantern-buy-heart`,e),()=>window.removeEventListener(`lantern-buy-heart`,e)},[A,Q]),(0,r.useEffect)(()=>(document.body.style.overflow=G?`hidden`:``,()=>{document.body.style.overflow=``}),[G])';
+if(html.indexOf(anchor)===-1||html.indexOf('__ReactDOMClient.hydrateRoot')===-1)throw new Error('Lanternwood hook verification failed');
+html=html.replace(anchor,replacement);
+var enhancer='<script>(function(){function bought(){try{return JSON.parse(localStorage.getItem("lanternwood-heart-bought")||"{}")||{}}catch(e){return {}}}function addHeart(){var shop=document.querySelector(".merchant-shop"),goods=shop&&shop.querySelector(".merchant-goods");if(!shop||!goods||goods.querySelector(".heart-upgrade-product"))return;var id=shop.getAttribute("aria-label").indexOf("lantern")>=0?1:2,cost=id===1?4:8,box=document.createElement("div");box.className="heart-upgrade-product";box.style.cssText="margin-top:9px;padding-top:9px;border-top:1px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:space-between;gap:10px";var label=document.createElement("span"),btn=document.createElement("button");label.textContent="♥ Extra Heart · "+cost;function paint(){var own=!!bought()[id];btn.disabled=own;btn.textContent=own?"OWNED ✓":"BUY HEART"}btn.onclick=function(){window.dispatchEvent(new CustomEvent("lantern-buy-heart",{detail:{id:id,cost:cost}}));setTimeout(paint,50)};box.appendChild(label);box.appendChild(btn);goods.appendChild(box);paint()}function addWater(){var picker=document.querySelector(".level-picker");if(!picker||picker.querySelector(".water-depths-link"))return;var b=document.createElement("button");b.className="water-depths-link";b.innerHTML="<span>🌊</span><strong>LEVEL 4</strong><small>Water Depths + Tidal Warden</small>";b.onclick=function(){location.href="./water-depths/"};picker.appendChild(b)}var o=new MutationObserver(function(){addHeart();addWater()});o.observe(document.documentElement,{childList:true,subtree:true});addHeart();addWater()})();<\/script>';
+html=html.replace('</body>',enhancer+'</body>');
+document.open();document.write(html);document.close();
+}).catch(function(err){console.error(err);document.getElementById('boot').textContent='Lanternwood could not start: '+(err&&err.message?err.message:err)});
+})();
+</script>
 </body>
 </html>
