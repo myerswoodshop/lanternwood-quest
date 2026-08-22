@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Crystal Cave Deluxe</title>
+<style>
+:root{
+  --ink:#eaf7ff; --muted:#9fb7c8; --cyan:#4de2ff; --gold:#ffd568;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#02070d;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink)}
+body{touch-action:none}
+#wrap{position:fixed;inset:0;background:radial-gradient(circle at 50% 10%,#10253d 0,#06101b 50%,#02070d 100%)}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#hud{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 8px) 10px 8px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;pointer-events:none}
+.stat{backdrop-filter:blur(10px);background:#061523cc;border:1px solid #27465d;border-radius:14px;padding:7px 5px;text-align:center;box-shadow:0 8px 24px #0008}
+.stat b{display:block;font-size:10px;letter-spacing:.6px;color:#bdd3e0}.stat span{font-weight:900;font-size:17px}
+#message{position:absolute;top:calc(env(safe-area-inset-top) + 74px);left:50%;transform:translateX(-50%);width:min(86vw,560px);text-align:center;padding:9px 12px;border-radius:14px;background:#061523d9;border:1px solid #2b4d63;box-shadow:0 10px 30px #0007;font-weight:800;font-size:13px;pointer-events:none}
+#controls{position:absolute;left:0;right:0;bottom:0;padding:10px 10px calc(env(safe-area-inset-bottom) + 10px);display:grid;grid-template-columns:94px 1fr 94px;align-items:end;gap:10px}
+.pad{display:grid;grid-template-columns:repeat(3,58px);grid-template-rows:repeat(3,58px);gap:4px;justify-content:center}
+.btn,.action{touch-action:none;user-select:none;border:1px solid #395b72;background:linear-gradient(180deg,#17354d,#0b1c2b);color:white;border-radius:16px;font-weight:900;box-shadow:0 5px 0 #02090f,0 8px 22px #0008}
+.btn:active,.action:active,.held{transform:translateY(3px);box-shadow:0 2px 0 #02090f;background:#214a69}
+#up{grid-column:2;grid-row:1}#left{grid-column:1;grid-row:2}#down{grid-column:2;grid-row:2}#right{grid-column:3;grid-row:2}
+.action{height:76px;font-size:13px;padding:6px}.action strong{display:block;font-size:22px}
+.centerNote{text-align:center;color:#aac2d0;font-size:10px;margin-top:2px}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(#02060abb,#02060af0);z-index:10}
+.card{width:min(94vw,500px);padding:24px 20px;border-radius:24px;background:linear-gradient(180deg,#17314b,#0a1927);border:1px solid #3b627d;box-shadow:0 24px 80px #000c;text-align:center}
+.logo{font-size:42px;font-weight:1000;line-height:.95;margin:0 0 8px;text-shadow:0 0 22px #48dfff88}
+.card p{color:#b5cad7;line-height:1.45}.play{border:0;border-radius:17px;padding:15px 24px;font-size:18px;font-weight:1000;background:linear-gradient(#7ceaff,#32bee8);color:#00131c;box-shadow:0 6px 0 #117c9e}
+.play:active{transform:translateY(3px);box-shadow:0 3px 0 #117c9e}
+@media(max-width:460px){
+  #controls{grid-template-columns:82px 1fr 82px;gap:5px}
+  .pad{grid-template-columns:repeat(3,52px);grid-template-rows:repeat(3,52px)}
+  .action{height:66px;font-size:11px}
+  .action strong{font-size:18px}
+}
+</style>
+</head>
+<body>
+<div id="wrap">
+<canvas id="c"></canvas>
+<div id="hud">
+  <div class="stat"><b>❤️ HEALTH</b><span id="hp">5</span></div>
+  <div class="stat"><b>🔥 LIGHT</b><span id="light">100</span></div>
+  <div class="stat"><b>💎 CRYSTALS</b><span id="gems">0/8</span></div>
+  <div class="stat"><b>🗝️ KEY</b><span id="key">NO</span></div>
+</div>
+<div id="message">Collect all 8 crystals, find the golden key, and reach the ancient gate.</div>
+<div id="controls">
+  <button class="action" id="boost"><strong>⚡</strong>BOOST</button>
+  <div>
+    <div class="pad">
+      <button class="btn" id="up">▲</button>
+      <button class="btn" id="left">◀</button>
+      <button class="btn" id="down">▼</button>
+      <button class="btn" id="right">▶</button>
+    </div>
+    <div class="centerNote">Hold to move • works with touch</div>
+  </div>
+  <button class="action" id="pulse"><strong>✨</strong>PULSE</button>
+</div>
+<div class="overlay" id="overlay">
+  <div class="card">
+    <div class="logo">CRYSTAL<br>CAVE</div>
+    <p><b>Deluxe Edition</b></p>
+    <p>Enter the glowing cavern, dodge cave creatures, recover the eight Sun Crystals, and unlock the ancient gate.</p>
+    <button class="play" id="start">START ADVENTURE</button>
+  </div>
+</div>
+</div>
+
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d');
+const $=id=>document.getElementById(id);
+let W,H,DPR=1,last=performance.now(),running=false,boost=false,pulse=0,msgTime=0;
+let dir={x:0,y:0},keys={};
+const world={w:1600,h:1000};
+const p={x:120,y:150,r:17,hp:5,light:100,gems:0,key:false,hit:0,step:0};
+const camera={x:0,y:0};
+
+const walls=[
+ [0,0,1600,45],[0,955,1600,45],[0,0,45,1000],[1555,0,45,1000],
+ [240,45,45,300],[240,405,45,240],[240,710,45,245],
+ [520,160,45,300],[520,530,45,425],
+ [800,45,45,240],[800,350,45,270],[800,690,45,265],
+ [1080,160,45,300],[1080,525,45,430],
+ [1330,45,45,270],[1330,385,45,280],[1330,735,45,220],
+ [285,310,160,45],[45,645,195,45],[565,480,165,45],[845,300,160,45],
+ [1125,470,160,45],[1375,665,180,45]
+].map(a=>({x:a[0],y:a[1],w:a[2],h:a[3]}));
+
+const gems=[
+ {x:370,y:145},{x:135,y:820},{x:405,y:655},{x:670,y:850},
+ {x:940,y:165},{x:940,y:720},{x:1200,y:310},{x:1460,y:840}
+].map(g=>({...g,t:false,phase:Math.random()*6.28}));
+const keyItem={x:1220,y:835,t:false};
+const exit={x:1490,y:110};
+
+const enemies=[
+ {type:'bat',x:375,y:430,vx:55,vy:20,r:18,phase:0},
+ {type:'slime',x:680,y:250,vx:-32,vy:44,r:22,phase:1.8},
+ {type:'bat',x:925,y:520,vx:50,vy:-38,r:18,phase:2.4},
+ {type:'slime',x:1200,y:650,vx:-42,vy:-24,r:22,phase:3.1},
+ {type:'bat',x:1460,y:440,vx:30,vy:50,r:18,phase:4.4}
+];
+const particles=[];
+
+function fit(){
+  DPR=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;
+  c.width=W*DPR;c.height=H*DPR;c.style.width=W+'px';c.style.height=H+'px';
+  x.setTransform(DPR,0,0,DPR,0,0);
+}
+addEventListener('resize',fit);fit();
+
+function collide(nx,ny,r=p.r){
+  for(const w of walls) if(nx+r>w.x&&nx-r<w.x+w.w&&ny+r>w.y&&ny-r<w.y+w.h) return true;
+  return false;
+}
+function d(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function say(t,s=2){$('message').textContent=t;msgTime=s}
+function hud(){ $('hp').textContent=p.hp;$('light').textContent=Math.max(0,Math.round(p.light));$('gems').textContent=p.gems+'/8';$('key').textContent=p.key?'YES':'NO' }
+function reset(){
+ Object.assign(p,{x:120,y:150,hp:5,light:100,gems:0,key:false,hit:0,step:0});
+ gems.forEach(g=>g.t=false);keyItem.t=false;particles.length=0;hud();
+}
+function burst(px,py,color,n=16){
+ for(let i=0;i<n;i++){let a=Math.random()*Math.PI*2,s=40+Math.random()*110;particles.push({x:px,y:py,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.5+Math.random()*.7,color,size:2+Math.random()*4})}
+}
+function finish(win){
+ running=false;
+ $('overlay').style.display='flex';
+ $('overlay').innerHTML=`<div class="card"><div class="logo">${win?'YOU<br>ESCAPED!':'CAVE<br>CLAIMED YOU'}</div><p>${win?'The Sun Crystals blaze back to life. The ancient gate opens and the whole cavern erupts in light.':'The cavern goes dark. Try again and save BOOST for dangerous corridors.'}</p><p><b>Crystals:</b> ${p.gems}/8</p><button class="play" id="again">PLAY AGAIN</button></div>`;
+ $('again').onclick=()=>{reset();$('overlay').style.display='none';running=true;last=performance.now()}
+}
+
+function update(dt,t){
+ if(!running)return;
+ p.hit=Math.max(0,p.hit-dt);pulse=Math.max(0,pulse-dt);
+ if(msgTime>0){msgTime-=dt;if(msgTime<=0)$('message').textContent='Collect all 8 crystals, find the golden key, and reach the ancient gate.'}
+ let dx=dir.x,dy=dir.y;
+ if(keys['arrowleft']||keys['a'])dx--; if(keys['arrowright']||keys['d'])dx++;
+ if(keys['arrowup']||keys['w'])dy--; if(keys['arrowdown']||keys['s'])dy++;
+ let m=Math.hypot(dx,dy);if(m){dx/=m;dy/=m}
+ let sp=145;
+ if(boost&&p.light>0){sp=275;p.light-=25*dt}else p.light-=1.2*dt;
+ p.step+=m*sp*dt*.07;
+ let nx=p.x+dx*sp*dt,ny=p.y+dy*sp*dt;
+ if(!collide(nx,p.y))p.x=nx;if(!collide(p.x,ny))p.y=ny;
+
+ for(const e of enemies){
+   let ex=e.x+e.vx*dt,ey=e.y+e.vy*dt;
+   if(collide(ex,e.y,e.r))e.vx*=-1;else e.x=ex;
+   if(collide(e.x,ey,e.r))e.vy*=-1;else e.y=ey;
+   if(d(p,e)<p.r+e.r+4&&p.hit<=0){p.hp--;p.hit=1.1;burst(p.x,p.y,'#ff6574',18);say('💥 A cave creature hit you!')}
+ }
+ for(const g of gems) if(!g.t&&d(p,g)<34){g.t=true;p.gems++;p.light=Math.min(100,p.light+9);burst(g.x,g.y,'#4de2ff',24);say('💎 Sun Crystal recovered!')}
+ if(!keyItem.t&&d(p,keyItem)<36){keyItem.t=true;p.key=true;burst(keyItem.x,keyItem.y,'#ffd568',30);say('🗝️ Golden key found!')}
+ if(d(p,exit)<55){
+   if(p.gems===8&&p.key)finish(true);
+   else say(`The gate is sealed — ${8-p.gems} crystal${8-p.gems===1?'':'s'}${p.key?'':' + key'} missing.`,1.2)
+ }
+ if(p.hp<=0||p.light<=0)finish(false);
+
+ for(let i=particles.length-1;i>=0;i--){const q=particles[i];q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=30*dt;q.life-=dt;if(q.life<=0)particles.splice(i,1)}
+ camera.x+=(Math.max(0,Math.min(world.w-W,p.x-W*.5))-camera.x)*Math.min(1,dt*7);
+ camera.y+=(Math.max(0,Math.min(world.h-H,p.y-H*.5))-camera.y)*Math.min(1,dt*7);
+ hud();
+}
+function caveRock(wx,wy,ww,wh){
+ const grd=x.createLinearGradient(wx,wy,wx+ww,wy+wh);grd.addColorStop(0,'#1b3140');grd.addColorStop(.5,'#102433');grd.addColorStop(1,'#091720');
+ x.fillStyle=grd;x.fillRect(wx,wy,ww,wh);
+ x.strokeStyle='#2e4b5b';x.lineWidth=2;x.strokeRect(wx+1,wy+1,ww-2,wh-2);
+ for(let yy=wy+14;yy<wy+wh;yy+=22)for(let xx=wx+12;xx<wx+ww;xx+=24){x.fillStyle='rgba(129,171,192,.05)';x.beginPath();x.arc(xx+(yy%17),yy,4+(xx%5),0,6.28);x.fill()}
+}
+function crystal(cx,cy,s,phase){
+ x.save();x.translate(cx,cy);let bob=Math.sin(phase)*4;x.translate(0,bob);
+ x.shadowColor='#50e5ff';x.shadowBlur=24;x.fillStyle='#6cecff';
+ x.beginPath();x.moveTo(0,-s);x.lineTo(s*.68,-s*.2);x.lineTo(s*.42,s);x.lineTo(-s*.42,s);x.lineTo(-s*.68,-s*.2);x.closePath();x.fill();
+ x.fillStyle='#d4fbff';x.beginPath();x.moveTo(-2,-s*.78);x.lineTo(s*.34,-s*.15);x.lineTo(1,s*.55);x.closePath();x.fill();
+ x.restore();
+}
+function bat(e,t){
+ x.save();x.translate(e.x,e.y+Math.sin(t*5+e.phase)*4);x.fillStyle='#9f7cff';x.shadowColor='#5c36c9';x.shadowBlur=12;
+ x.beginPath();x.moveTo(-6,0);x.quadraticCurveTo(-23,-20-Math.sin(t*10)*7,-32,-4);x.quadraticCurveTo(-20,-1,-13,8);x.quadraticCurveTo(0,14,13,8);x.quadraticCurveTo(20,-1,32,-4);x.quadraticCurveTo(23,-20-Math.sin(t*10)*7,6,0);x.closePath();x.fill();
+ x.fillStyle='#ffdd6a';x.beginPath();x.arc(-4,-2,2,0,6.28);x.arc(4,-2,2,0,6.28);x.fill();x.restore();
+}
+function slime(e,t){
+ x.save();x.translate(e.x,e.y+Math.sin(t*4+e.phase)*3);x.fillStyle='#5af0a2';x.shadowColor='#35bb75';x.shadowBlur=14;
+ x.beginPath();x.arc(0,0,20,Math.PI,0);x.quadraticCurveTo(22,20,10,18);x.quadraticCurveTo(0,27,-10,18);x.quadraticCurveTo(-22,20,-20,0);x.closePath();x.fill();
+ x.fillStyle='#082318';x.beginPath();x.arc(-7,-2,3,0,6.28);x.arc(7,-2,3,0,6.28);x.fill();x.restore();
+}
+function explorer(t){
+ const blink=p.hit>0&&Math.floor(p.hit*12)%2===0;if(blink)return;
+ x.save();x.translate(p.x,p.y);
+ x.shadowColor='#ffd875';x.shadowBlur=18;
+ x.fillStyle='#eac59e';x.beginPath();x.arc(0,-15,9,0,6.28);x.fill();
+ x.fillStyle='#1d3550';x.fillRect(-10,-6,20,23);
+ x.fillStyle='#b47d3c';x.fillRect(-12,-6,5,18);
+ x.strokeStyle='#d5e6ee';x.lineWidth=5;x.lineCap='round';
+ let swing=Math.sin(p.step)*5;x.beginPath();x.moveTo(-5,16);x.lineTo(-8+swing,29);x.moveTo(5,16);x.lineTo(8-swing,29);x.stroke();
+ x.fillStyle='#ffd568';x.beginPath();x.arc(12,2,5,0,6.28);x.fill();x.shadowBlur=0;x.restore();
+}
+function draw(t){
+ x.clearRect(0,0,W,H);
+ x.fillStyle='#06111b';x.fillRect(0,0,W,H);
+ x.save();x.translate(-camera.x,-camera.y);
+
+ let bg=x.createLinearGradient(0,0,0,world.h);bg.addColorStop(0,'#0d2334');bg.addColorStop(1,'#07121b');x.fillStyle=bg;x.fillRect(0,0,world.w,world.h);
+ for(let yy=70;yy<world.h;yy+=70)for(let xx=70;xx<world.w;xx+=85){
+   let a=((xx*7+yy*3)%19)/19;x.fillStyle=`rgba(91,143,170,${.025+a*.035})`;x.beginPath();x.ellipse(xx,yy,10+(xx%17),5+(yy%11),0,0,6.28);x.fill();
+ }
+
+ x.fillStyle='#0b4960';x.globalAlpha=.55;x.beginPath();x.ellipse(430,820,85,35,0,0,6.28);x.ellipse(1170,180,95,28,0,0,6.28);x.fill();x.globalAlpha=1;
+ x.strokeStyle='#1b89a7';x.lineWidth=2;x.beginPath();x.ellipse(430,820,75+Math.sin(t*2)*4,28,0,0,6.28);x.stroke();
+
+ let eg=x.createRadialGradient(exit.x,exit.y,15,exit.x,exit.y,120);eg.addColorStop(0,'rgba(255,225,110,.9)');eg.addColorStop(1,'rgba(255,205,70,0)');x.fillStyle=eg;x.beginPath();x.arc(exit.x,exit.y,120,0,6.28);x.fill();
+ x.fillStyle='#5a4530';x.fillRect(exit.x-30,exit.y-42,60,84);x.fillStyle='#d8a849';for(let i=-20;i<=20;i+=10)x.fillRect(exit.x+i-2,exit.y-35,4,70);
+
+ for(const w of walls)caveRock(w.x,w.y,w.w,w.h);
+
+ for(let i=0;i<30;i++){let sx=75+(i*137)%1450,sy=80+(i*83)%830;if(collide(sx,sy,8))continue;x.fillStyle='#183141';x.beginPath();x.moveTo(sx-8,sy+12);x.lineTo(sx,sy-18-(i%13));x.lineTo(sx+8,sy+12);x.closePath();x.fill()}
+
+ for(const g of gems)if(!g.t){if(pulse>0){x.strokeStyle='#7cf1ff';x.lineWidth=3;x.beginPath();x.arc(g.x,g.y,34+Math.sin(t*8)*5,0,6.28);x.stroke()}crystal(g.x,g.y,17,t*3+g.phase)}
+ if(!keyItem.t){
+   if(pulse>0){x.strokeStyle='#ffe17b';x.lineWidth=3;x.beginPath();x.arc(keyItem.x,keyItem.y,38,0,6.28);x.stroke()}
+   x.save();x.translate(keyItem.x,keyItem.y);x.shadowColor='#ffd568';x.shadowBlur=20;x.fillStyle='#ffd568';x.beginPath();x.arc(-9,0,9,0,6.28);x.fill();x.fillRect(0,-4,28,8);x.fillRect(19,4,5,11);x.restore()
+ }
+
+ for(const e of enemies)e.type==='bat'?bat(e,t):slime(e,t);
+ explorer(t);
+
+ for(const q of particles){x.globalAlpha=Math.max(0,q.life);x.fillStyle=q.color;x.beginPath();x.arc(q.x,q.y,q.size,0,6.28);x.fill()}x.globalAlpha=1;
+
+ x.fillStyle=`rgba(0,0,0,${.48+(1-p.light/100)*.38})`;x.fillRect(0,0,world.w,world.h);
+ x.globalCompositeOperation='destination-out';
+ let r=150+Math.sin(t*4)*4;let lg=x.createRadialGradient(p.x,p.y,28,p.x,p.y,r);lg.addColorStop(0,'rgba(0,0,0,1)');lg.addColorStop(.45,'rgba(0,0,0,.75)');lg.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=lg;x.beginPath();x.arc(p.x,p.y,r,0,6.28);x.fill();
+ x.globalCompositeOperation='source-over';
+
+ x.restore();
+
+ let vg=x.createRadialGradient(W/2,H/2,Math.min(W,H)*.2,W/2,H/2,Math.max(W,H)*.72);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+}
+
+function frame(now){let dt=Math.min(.033,(now-last)/1000);last=now;update(dt,now/1000);draw(now/1000);requestAnimationFrame(frame)}requestAnimationFrame(frame);
+$('start').onclick=()=>{reset();$('overlay').style.display='none';running=true;last=performance.now()};
+
+function bind(id,dx,dy){
+ const b=$(id);
+ const on=e=>{e.preventDefault();dir={x:dx,y:dy};b.classList.add('held')};
+ const off=e=>{e.preventDefault();dir={x:0,y:0};b.classList.remove('held')};
+ ['pointerdown','touchstart'].forEach(ev=>b.addEventListener(ev,on,{passive:false}));
+ ['pointerup','pointercancel','pointerleave','touchend','touchcancel'].forEach(ev=>b.addEventListener(ev,off,{passive:false}));
+}
+bind('up',0,-1);bind('down',0,1);bind('left',-1,0);bind('right',1,0);
+const bb=$('boost');
+function bon(e){e.preventDefault();boost=true;bb.classList.add('held')}
+function boff(e){e.preventDefault();boost=false;bb.classList.remove('held')}
+['pointerdown','touchstart'].forEach(ev=>bb.addEventListener(ev,bon,{passive:false}));
+['pointerup','pointercancel','pointerleave','touchend','touchcancel'].forEach(ev=>bb.addEventListener(ev,boff,{passive:false}));
+$('pulse').addEventListener('pointerdown',e=>{e.preventDefault();if(!running)return;if(p.light>=8){p.light-=8;pulse=2.2;say('✨ Ancient pulse reveals hidden treasures.')}else say('Not enough lantern light.')});
+addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key===' ')boost=true});
+addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false;if(e.key===' ')boost=false});
+</script>
+</body>
+</html>
