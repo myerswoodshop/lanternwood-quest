@@ -23,26 +23,45 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout current main
         uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Verify patched Lanternwood source
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '__ReactDOMClient.hydrateRoot' index.html
+          if grep -q '__ReactDOMClient.createRoot' index.html; then
+            echo 'ERROR: stale createRoot mount still present'
+            exit 1
+          fi
+          echo "Deploying commit $(git rev-parse HEAD)"
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
+
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
       - name: Record successful deployment
         shell: bash
         run: |
           set -euo pipefail
-          printf 'Lanternwood Quest deployed successfully\n%s\n' "${{ steps.deployment.outputs.page_url }}" > DEPLOYMENT_OK.txt
+          printf 'Lanternwood Quest deployed successfully\nURL: %s\nCOMMIT: %s\nDEPLOYED: %s\n' \
+            "${{ steps.deployment.outputs.page_url }}" \
+            "$(git rev-parse HEAD)" \
+            "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > DEPLOYMENT_OK.txt
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add DEPLOYMENT_OK.txt
-          git commit -m 'Record successful Pages deployment [skip ci]' || exit 0
+          git commit -m 'Record successful Pages deployment [skip ci]'
           git push
-
-# manual trigger after Pages source enabled
