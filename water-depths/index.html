@@ -10,7 +10,7 @@
 </style>
 </head>
 <body>
-<div class="frame-wrap"><iframe id="waterGame" src="./game.html?v=movement-fix-1" title="Water Depths game" allow="fullscreen"></iframe></div>
+<div class="frame-wrap"><iframe id="waterGame" title="Water Depths game" allow="fullscreen"></iframe></div>
 <div class="ready" id="ready">
   <div class="ready-card">
     <div class="wave">🌊</div>
@@ -30,7 +30,16 @@
 <script>
 (function(){
 'use strict';
-var frame=document.getElementById('waterGame'),ready=document.getElementById('ready');
+var frame=document.getElementById('waterGame'),ready=document.getElementById('ready'),devBoss=new URLSearchParams(location.search).get('devboss')==='1';
+function startInside(){
+  var d;try{d=frame.contentDocument||frame.contentWindow.document}catch(e){return}
+  var btn=d&&d.getElementById('start'),ov=d&&d.getElementById('overlay');
+  if(btn)btn.click();
+  if(ov)ov.hidden=true;
+  if(devBoss){var bar=d&&d.getElementById('bossbar'),mission=d&&d.getElementById('mission');if(bar)bar.hidden=false;if(mission)mission.textContent='DEV BOSS TEST — TIDAL WARDEN';}
+  ready.hidden=true;
+  requestAnimationFrame(function(){try{frame.contentWindow.focus()}catch(e){};try{var joy=d&&d.getElementById('joy');if(joy)joy.focus({preventScroll:true})}catch(e){}});
+}
 function tuneFrame(){
   var d;
   try{d=frame.contentDocument||frame.contentWindow.document}catch(e){return}
@@ -48,20 +57,20 @@ function tuneFrame(){
       var shop=panel.querySelector('.shop');if(shop)shop.style.display='none';
       var ps=panel.querySelectorAll(':scope > p');for(var i=1;i<ps.length;i++)ps[i].style.display='none';
       panel.style.maxWidth='390px';panel.style.padding='14px';
-      var start=d.getElementById('start');if(start&&text.indexOf('swept away')>=0)start.onclick=function(){ready.hidden=false;frame.src='./game.html?v=retry-'+Date.now()};
+      var start=d.getElementById('start');if(start&&text.indexOf('swept away')>=0)start.onclick=function(){location.reload()};
     }
   });
   if(ov)observer.observe(ov,{attributes:true,attributeFilter:['hidden'],subtree:true,childList:true,characterData:true});
 }
-frame.addEventListener('load',tuneFrame);
-document.getElementById('play').addEventListener('click',function(){
-  tuneFrame();
-  var d=frame.contentDocument||frame.contentWindow.document,btn=d&&d.getElementById('start'),ov=d&&d.getElementById('overlay');
-  if(btn)btn.click();
-  if(ov)ov.hidden=true;
-  ready.hidden=true;
-  requestAnimationFrame(function(){try{frame.contentWindow.focus()}catch(e){};try{var joy=frame.contentDocument&&frame.contentDocument.getElementById('joy');if(joy)joy.focus({preventScroll:true})}catch(e){}});
-});
+frame.addEventListener('load',function(){tuneFrame();if(devBoss)setTimeout(startInside,0)});
+if(devBoss){
+  fetch('./game.html?v=dev-boss-1',{cache:'no-cache'}).then(function(r){return r.text()}).then(function(html){
+    html=html.replace('running=false,last=performance.now(),bossOn=false,won=false','running=false,last=performance.now(),bossOn=true,won=false');
+    html=html.replace(/let enemies=\[\[220,150\][\s\S]*?\.map\(v=>\(\{x:v\[0\],y:v\[1\],hp:4,stun:0\}\)\);/,'let enemies=[];');
+    frame.srcdoc=html;
+  }).catch(function(){frame.src='./game.html?v=movement-fix-1'});
+}else frame.src='./game.html?v=movement-fix-1';
+document.getElementById('play').addEventListener('click',function(){tuneFrame();startInside()});
 document.getElementById('back').addEventListener('click',function(){location.href='../'});
 })();
 </script>
