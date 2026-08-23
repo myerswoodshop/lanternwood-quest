@@ -1,1 +1,46 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><title>Lanternlight Quest — Water Depths</title><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#061c2b;color:#fff4cf;font-family:system-ui,sans-serif}#boot{position:fixed;inset:0;display:grid;place-items:center;font-weight:900}</style></head><body><div id="boot">Loading Water Depths…</div><script>(function(){'use strict';fetch('./index.html?v=merchant-fix-2',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('Could not load Water Depths ('+r.status+')');return r.text()}).then(function(html){html=html.replace('../portal-theme.js?v=1','../portal-theme.js?v=6');document.open();document.write(html);document.close()}).catch(function(err){console.error(err);document.getElementById('boot').textContent='Water Depths could not start: '+(err&&err.message?err.message:err)})})();</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#061c2b">
+<title>Lanternlight Quest — Water Depths</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#061c2b;color:#fff4cf;font-family:system-ui,sans-serif}#boot{position:fixed;inset:0;display:grid;place-items:center;font-weight:900}</style>
+</head>
+<body>
+<div id="boot">Loading Water Depths…</div>
+<script>
+(function(){
+'use strict';
+fetch('./index.html?v=water-visuals-1',{cache:'no-store'}).then(function(r){
+  if(!r.ok)throw new Error('Could not load Water Depths ('+r.status+')');
+  return r.text();
+}).then(function(html){
+  /* Always load the newest shared theme. */
+  html=html.replace('../portal-theme.js?v=3','../portal-theme.js?v=10');
+
+  /* Draw-time scaling only: gameplay collision sizes are unchanged. */
+  html=html.replace('var newEnemy="for(const e of enemies){x.save();x.translate(e.x,e.y);','var newEnemy="for(const e of enemies){x.save();x.translate(e.x,e.y);x.scale(1.28,1.28);');
+  html=html.replace('var newBoss="if(bossOn&&boss.hp>0){x.save();x.translate(boss.x,boss.y);','var newBoss="if(bossOn&&boss.hp>0){x.save();x.translate(boss.x,boss.y);x.scale(1.15,1.15);');
+  html=html.replace('var newPlayer="x.save();x.translate(p.x,p.y);','var newPlayer="x.save();x.translate(p.x,p.y);x.scale(1.42,1.42);');
+
+  /* Add clearer cloak trim, belt and stronger hero silhouette. */
+  html=html.replace("x.closePath();x.fill();x.strokeStyle='#e6ad80';x.lineWidth=5;","x.closePath();x.fill();x.strokeStyle='#9fe8ef';x.lineWidth=2;x.beginPath();x.moveTo(-11,-8);x.lineTo(-14,11);x.quadraticCurveTo(0,20,14,11);x.lineTo(11,-8);x.stroke();x.fillStyle='#d5a44a';x.fillRect(-11,7,22,3);x.strokeStyle='#e6ad80';x.lineWidth=5;");
+  html=html.replace("x.fillStyle=p.inv>0?'#e8d4ff':'#fff7e7';x.beginPath();x.arc(-4,-21,2,0,Math.PI*2);x.arc(4,-21,2,0,Math.PI*2);x.fill();","x.fillStyle=p.inv>0?'#e8d4ff':'#fff7e7';x.beginPath();x.arc(-4,-21,2,0,Math.PI*2);x.arc(4,-21,2,0,Math.PI*2);x.fill();x.strokeStyle='#442b24';x.lineWidth=1.8;x.beginPath();x.moveTo(-8,-26);x.lineTo(-2,-24);x.moveTo(8,-26);x.lineTo(2,-24);x.stroke();");
+
+  /* Remove the giant tidal-wave attack entirely. Waves expire instantly and are never drawn. */
+  html=html.replace("for(const w of waves){w.y+=w.vy*dt;w.life-=dt;if(!w.hit&&Math.abs(p.y-w.y)<w.h*.34){w.hit=true;hurt(1,'TIDAL WAVE! 1 heart lost!')}}","for(const w of waves){w.life=-1}");
+  html=html.replace(/var newWaveDraw="for\(const w of waves\)\{x\.save\(\);let yy=w\.y;[\s\S]*?x\.restore\(\)\}";/,'var newWaveDraw="for(const w of waves){}";');
+  html=html.replace('Tidal wave costs 1 heart','No full-screen tidal wave');
+
+  document.open();
+  document.write(html);
+  document.close();
+}).catch(function(err){
+  console.error(err);
+  document.getElementById('boot').textContent='Water Depths could not start: '+(err&&err.message?err.message:err);
+});
+})();
+</script>
+</body>
+</html>
