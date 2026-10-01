@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" role="img" aria-label="Trout guide jon boat">
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 23h43l-7 10H17L8 23Z" fill="currentColor" opacity=".16" stroke-width="3"/>
+    <path d="M17 23l4-8h19l7 8" stroke-width="3"/>
+    <path d="M27 15v-5h8l3 5" stroke-width="3"/>
+    <circle cx="31" cy="8" r="3" fill="currentColor" stroke="none"/>
+    <path d="M46 20h7l2 7-4 5" stroke-width="3"/>
+    <path d="M53 19l5-2v10h-4" stroke-width="3"/>
+    <path d="M20 14 12 4" stroke-width="2.4"/>
+    <path d="M12 4 7 2" stroke-width="2"/>
+    <path d="M11 34c8 3 16 3 24 0 7-2 14-2 21 1" stroke-width="2.4" opacity=".8"/>
+  </g>
+</svg>
